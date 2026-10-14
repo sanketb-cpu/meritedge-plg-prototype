@@ -6455,14 +6455,14 @@ function generateAiAssessment(){
   wizard.data.aiCreateAt = 0;
   wizard.data.aiPct = 12;
   wizard.data.aiCreateStartedAt = Date.now();
-  wizard.data.aiCreateDeadline = Date.now() + 10000;
+  wizard.data.aiCreateDeadline = Date.now() + 25000;
   renderWorkspace();
   const tick = i => {
     if(gen!==aiCreateGen || !wizard) return;
     wizard.data.aiCreateAt = i;
     wizard.data.aiPct = Math.min(100, [12,38,62,88,100][i]||100);
     renderWorkspace();
-    if(i<4) aiCreateTimer = setTimeout(()=>tick(i+1), 1900);
+    if(i<4) aiCreateTimer = setTimeout(()=>tick(i+1), 5500);
     else aiCreateTimer = setTimeout(()=>{
       if(gen!==aiCreateGen || !wizard) return;
       const jd = jdById(wizard.data.jdId) || jdByRole(intentRole());
@@ -6482,7 +6482,7 @@ function generateAiAssessment(){
       } else {
         publishAssessment();
       }
-    }, 1050);
+    }, 2600);
   };
   aiCreateTimer = setTimeout(()=>tick(0), 350);
 }
@@ -6504,14 +6504,14 @@ function generateAiInterview(){
   wizard.data.aiCreateAt = 0;
   wizard.data.aiPct = 12;
   wizard.data.aiCreateStartedAt = Date.now();
-  wizard.data.aiCreateDeadline = Date.now() + 10000;
+  wizard.data.aiCreateDeadline = Date.now() + 25000;
   renderWorkspace();
   const tick = i => {
     if(gen!==aiCreateGen || !wizard) return;
     wizard.data.aiCreateAt = i;
     wizard.data.aiPct = Math.min(100, [12,38,62,88,100][i]||100);
     renderWorkspace();
-    if(i<4) aiCreateTimer = setTimeout(()=>tick(i+1), 1900);
+    if(i<4) aiCreateTimer = setTimeout(()=>tick(i+1), 5500);
     else aiCreateTimer = setTimeout(()=>{
       if(gen!==aiCreateGen || !wizard) return;
       const jd = jdById(wizard.data.jdId) || jdByRole(wizard.data.role || intentRole());
@@ -6524,7 +6524,7 @@ function generateAiInterview(){
       } else {
         publishInterview();
       }
-    }, 1050);
+    }, 2600);
   };
   aiCreateTimer = setTimeout(()=>tick(0), 350);
 }
@@ -6583,7 +6583,7 @@ function meWizardChrome(title, body){
     <div class="mew-body">${body}</div>
   </div>`;
 }
-function creatingScreenHtml(title, steps, lines){
+function creatingScreenHtmlLegacy(title, steps, lines){
   const d = wizard.data;
   const at = d.aiCreateAt||0;
   const pct = d.aiPct||12;
@@ -6630,16 +6630,12 @@ function creatingScreenHtml(title, steps, lines){
         </article>
         <div class="cya-compare-vs">VS</div>
         <article class="cya-compare-card fast">
-          <div class="cya-compare-top"><span class="cya-compare-label">MeritEdge</span><span class="cya-compare-icon">10s</span></div>
-          <strong class="cya-compare-time">00:${String(Math.min(10, secs)).padStart(2,"0")}</strong>
+          <div class="cya-compare-top"><span class="cya-compare-label">MeritEdge</span><span class="cya-compare-icon">25s</span></div>
+          <strong class="cya-compare-time">00:${String(Math.min(25, secs)).padStart(2,"0")}</strong>
           <p>JD to skills to questions to ready ${subject}</p>
           <div class="cya-fast-track"><i style="width:${pct}%"></i></div>
           <small>Ready in seconds</small>
         </article>
-      </div>
-      <div class="cya-build-strip" aria-live="polite">
-        <div class="cya-build-head"><span>LIVE BUILD</span><b>${savedTime} saved</b></div>
-        <div class="cya-build-chips">${outputChips}</div>
       </div>
       <p class="cya-countdown">${creatingPreview?"Preparing your preview":"Auto-publishing"} in ${secs} seconds</p>
       <div class="cya-progress" aria-label="Assessment generation progress">
@@ -6654,7 +6650,85 @@ function creatingScreenHtml(title, steps, lines){
     </div>
   </div>`;
 }
-function focusedCreateHtml(){
+function creatingScreenHtml(title, steps, lines){
+  const d = wizard.data;
+  const at = d.aiCreateAt||0;
+  const pct = d.aiPct||12;
+  const secs = d.aiCreateDeadline ? Math.max(0, Math.ceil((d.aiCreateDeadline-Date.now())/1000)) : Math.min(59, at * 2 + 1);
+  const creatingPreview = !!d.focusedCreate;
+  const isInterview = title.includes("Interview");
+  const subject = isInterview ? "interview" : "assessment";
+  const outcomeHeadline = isInterview ? "AI interview ready to launch in seconds." : "published assessment in seconds.";
+  const publishLabel = isInterview ? "AI interview ready to publish" : "Assessment ready to publish";
+  const slowSecs = Math.max(0, 7200 - Math.floor((Date.now() - (d.aiCreateStartedAt || Date.now())) / 1000));
+  const slowTimer = [Math.floor(slowSecs / 3600), Math.floor((slowSecs % 3600) / 60), slowSecs % 60].map(n => String(n).padStart(2,"0")).join(":");
+  const elapsedSeconds = d.aiCreateStartedAt ? Math.max(0, Math.floor((Date.now() - d.aiCreateStartedAt) / 1000)) : 0;
+  const savedMinutes = Math.max(0, Math.floor((7200 - elapsedSeconds) / 60));
+  const savedTime = `${Math.floor(savedMinutes / 60)}h ${String(savedMinutes % 60).padStart(2,"0")}m`;
+  const outputItems = isInterview
+    ? ["3 topics mapped", "5 probes drafted", "Evaluation rubric ready"]
+    : ["18 skills extracted", "5 questions calibrated", "Quality check passed"];
+  const outputChips = outputItems.map((item,i)=>`<span class="${i<at?"done":i===at?"active":""}">${i<at?"OK":i===at?"LIVE":"WAIT"} ${item}</span>`).join("");
+  const processingCopy = isInterview
+    ? ["Reading your job description...","Extracting interview topics from the JD...","Preparing balanced interview probes...","Running the quality check...","Interview draft ready to review."][Math.min(at,4)]
+    : ["Reading your job description...","Extracting skills from the JD...","Preparing balanced assessment questions...","Running the quality check...","Assessment ready to publish."][Math.min(at,4)];
+  const skills = isInterview ? ["Technical depth","Communication","Judgment","+2 more"] : ["Product Strategy","Stakeholder Management","Data Analysis","Roadmapping","Analytical Thinking","+2 more"];
+  const skillRevealCount = Math.min(skills.length, Math.max(1, at + 1));
+  const skillHtml = skills.map((skill,i)=>`<span class="cya-skill-pill ${i<skillRevealCount?"revealed":""} ${i%3===1?"violet":""}">${skill}</span>`).join("");
+  const questionRows = isInterview
+    ? [["Scenario probe","Medium"],["Follow-up question","Easy"],["Role-specific case","Medium"],["Situational judgement","Medium"],["Evaluation checkpoint","Hard"]]
+    : [["Scenario based question","Medium"],["Multiple choice question","Easy"],["Case study question","Medium"],["Situational judgement","Medium"],["Domain specific question","Hard"]];
+  const questionRevealCount = at >= 3 ? questionRows.length : Math.max(1, at);
+  const questionHtml = questionRows.map(([label, level], i)=>`<div class="cya-question-row ${i<questionRevealCount?"revealed":""}"><span class="cya-question-icon">&#9670;</span><span>${label}</span><em class="${level.toLowerCase()}">${level}</em></div>`).join("");
+  const selected = jdById(d.jdId);
+  const fileName = d.jdFileName || selected?.file || selected?.role || "Job Description.pdf";
+  const questionCount = (d.questions||[]).length || 5;
+  const duration = d.duration || selected?.duration || 45;
+  const jdStatus = at===0 ? "Reading document..." : "JD understood";
+  const engineStatus = at===0 ? "Waiting for JD" : at===1 ? "Extracting skills..." : at===2 ? "Sending skills to AI engine..." : "Skill map ready";
+  const draftStatus = at<2 ? "Waiting for skill map" : at===2 ? "Preparing assessment..." : isInterview ? "Ready to launch" : "Ready to publish";
+  return `<div class="cya cya-combined" data-tour="wizard">
+    <div class="cya-glow a"></div><div class="cya-glow b"></div>
+    <div class="cya-panel">
+      <div class="cya-generation-brandbar">
+        <img src="assets/otomeyt-ai-logo.svg" alt="Otomeyt AI">
+        <div class="cya-generation-step"><b>2</b><span>Creating Your ${isInterview?"AI Interview":"Assessment"}</span></div>
+      </div>
+      <h1>From job description to <span class="cya-ready-word">${outcomeHeadline}</span></h1>
+      <p class="cya-sub cya-invigilator-note"><span>Traditional invigilator-led setup takes hours of manual work.</span><b> MeritEdge AI builds a publish-ready ${subject} in seconds.</b></p>
+      <div class="cya-processing-state" aria-live="polite"><span class="cya-processing-dot"></span><b>${processingCopy}</b></div>
+      <div class="cya-compare" aria-label="Generation speed comparison">
+        <article class="cya-compare-card slow">
+          <div class="cya-compare-top"><span class="cya-compare-label">Other platforms</span><span class="cya-compare-icon">2h</span></div>
+          <strong class="cya-compare-time">${slowTimer}</strong>
+          <p>Manual setup, question review, and configuration</p>
+          <div class="cya-slow-track"><i></i></div><small>Still preparing...</small>
+        </article>
+        <div class="cya-compare-vs">VS</div>
+        <article class="cya-compare-card fast">
+          <div class="cya-compare-top"><span class="cya-compare-label">MeritEdge</span><span class="cya-compare-icon">25s</span></div>
+          <strong class="cya-compare-time">00:${String(Math.min(25, secs)).padStart(2,"0")}</strong>
+          <p>JD to skills to questions to publish-ready ${subject}</p>
+          <div class="cya-fast-track"><i style="width:${pct}%"></i></div><small>Ready in seconds</small>
+        </article>
+      </div>
+      <p class="cya-countdown">Preparing your ${subject} for publish in ${secs} seconds</p>
+      <div class="cya-progress" aria-label="Assessment generation progress">
+        <div class="cya-progress-meta"><span>Generation progress</span><b class="cya-pct">${pct}%</b></div>
+        <div class="cya-track"><i style="width:${pct}%"></i></div>
+      </div>
+      <div class="cya-preview-heading"><span>WHAT MERITEDGE IS BUILDING</span><b>From job description to a publish-ready ${subject} in seconds.</b></div>
+      <div class="cya-output-grid cya-process-board">
+        <article class="cya-output-card cya-jd-card ${at===0?"is-active":"is-done"}"><div class="cya-output-card-head"><span class="cya-output-icon">&#9633;</span><b>Job Description</b></div><div class="cya-document-icon"><span class="cya-document-sheet"><i></i><i></i><i></i><b>JD</b><em></em></span></div><strong>${escapeHtml(String(fileName))}</strong><small class="cya-flow-status">${jdStatus}</small></article>
+        <div class="cya-flow-connector ${at>=1?"is-on":""}"><span>&rarr;</span><i></i></div>
+        <article class="cya-output-card cya-skills-card ${at===1||at===2?"is-active":at>=3?"is-done":""}"><div class="cya-output-card-head"><span class="cya-output-icon cya-engine-icon">AI</span><b>AI skill engine</b></div><div class="cya-engine-core"><span>AI</span><i></i><i></i><i></i></div><div class="cya-skill-pills">${skillHtml}</div><small class="cya-flow-status">${engineStatus}</small></article>
+        <div class="cya-flow-connector ${at>=2?"is-on":""}"><span>&rarr;</span><i></i></div>
+        <article class="cya-output-card cya-questions-card ${at===2?"is-active":at>=3?"is-done":""}"><div class="cya-output-card-head"><span class="cya-output-icon">&#9776;</span><b>${publishLabel} <small>(Preview)</small></b></div><div class="cya-question-list">${questionHtml}</div><small class="cya-flow-status">${draftStatus}</small></article>
+      </div>
+    </div>
+  </div>`;
+}
+function focusedCreateHtmlLegacy(){
   const d = wizard.data;
   const selected = jdById(d.jdId);
   const domainGroups = focusedDomainGroups();
@@ -6720,6 +6794,66 @@ function focusedCreateHtml(){
     </div>
   </div>`;
 }
+function focusedCreateHtml(){
+  const d = wizard.data;
+  const selected = jdById(d.jdId);
+  const domainGroups = focusedDomainGroups();
+  const activeDomain = d.focusedDomain || "";
+  const activeGroup = domainGroups.find(group=>group.id===activeDomain);
+  const activeRoleId = d.focusedRoleId || selected?.id || "";
+  const availableRoles = activeGroup?.roles || [];
+  const custom = d.focusedCustomText || "";
+  const roleName = selected?.role || activeGroup?.roles.find(j=>j.id===activeRoleId)?.role || "Choose a role";
+  return `<div class="mew focused-create focused-create-v2">
+    <div class="focused-brandbar has-logo">
+      <img src="assets/otomeyt-ai-logo.svg" alt="Otomeyt AI">
+      <div class="focused-step-badge"><b>1</b><span>Create Your Assessment</span></div>
+    </div>
+    <div class="focused-head">
+      <div>
+        <h1>Skip building every question <span>by hand.</span></h1>
+        <p>Upload a job description or pick a role &mdash; we&rsquo;ll create a role-mapped assessment with recommended questions, duration, scoring, and candidate settings.</p>
+      </div>
+    </div>
+    <div class="focused-speed-compare" aria-label="Assessment generation speed comparison">
+      <article class="focused-speed-card manual"><div class="focused-speed-icon">◷</div><div><b>Manual setup</b><small>Write questions · Set scoring · Configure rules</small><strong>Typically takes <em>hours</em></strong></div></article>
+      <span class="focused-speed-vs">VS</span>
+      <article class="focused-speed-card merit"><div class="focused-speed-icon">ϟ</div><div><b>MeritEdge</b><small>Generate a role-mapped draft</small><strong>Ready in <em>seconds</em></strong></div></article>
+    </div>
+    <p class="focused-speed-note">Illustrative comparison; actual setup time varies by role.</p>
+    <div class="focused-body">
+      <aside class="focused-upload">
+        <div class="focused-upload-icon">↑</div>
+        <span class="focused-kicker">Your own role</span>
+        <h2>Upload a job description</h2>
+        <p>Use a PDF, DOC, DOCX, or TXT file and we&rsquo;ll match it to the closest assessment setup.</p>
+        <button class="focused-upload-btn" type="button" onclick="document.getElementById('focusedJdFile').click()">Upload JD</button>
+        <input id="focusedJdFile" type="file" accept=".pdf,.doc,.docx,.txt" style="display:none" onchange="onFocusedJdFile(event)">
+        <div class="focused-or"><span>or paste it here</span></div>
+        <textarea id="focusedJdText" placeholder="Paste your job description..." oninput="wizard.data.focusedCustomText=this.value">${escapeHtml(custom)}</textarea>
+        <small>Preview only · your file is not stored</small>
+      </aside>
+      <section class="focused-templates focused-role-picker">
+        <span class="focused-kicker">Configured assessments</span>
+        <h2>Select a Domain and Role</h2>
+        <p>Choose a ready-made setup and we&rsquo;ll create the assessment with recommended defaults.</p>
+        <label class="focused-control-label" for="focusedDomain">Domain</label>
+        <select id="focusedDomain" class="focused-select" onchange="focusedChooseDomain(this.value)">
+          <option value="" ${!activeDomain?"selected":""} disabled>Select Domain</option>
+          ${domainGroups.map(group=>`<option value="${group.id}" ${activeGroup?.id===group.id?"selected":""}>${escapeHtml(group.label)}</option>`).join("")}
+        </select>
+        <label class="focused-control-label" for="focusedRole">Role</label>
+        <select id="focusedRole" class="focused-select" onmousedown="focusedRoleMouseDown(event)" onfocus="focusedRoleFocus()" onchange="focusedChooseRole(this.value)">
+          <option value="" ${!activeRoleId?"selected":""} disabled>Select Role</option>
+          ${availableRoles.map(j=>`<option value="${j.id}" ${activeRoleId===j.id?"selected":""}>${escapeHtml(j.role)}</option>`).join("")}
+        </select>
+        <div id="focusedRoleError" class="focused-field-error" role="alert" hidden>Please select domain first</div>
+        <div class="focused-role-selected"><span>Selected setup</span><b>${escapeHtml(roleName)}</b><small>Questions, duration, scoring, and candidate settings are prefilled.</small></div>
+        <button class="focused-primary focused-role-create" type="button" onclick="focusedCreateAssessment()" ${d.focusedAutoStart || !selected?"disabled":""}>${d.focusedAutoStart?"Creating soon…":"Generate my assessment"} <span>→</span></button>
+      </section>
+    </div>
+  </div>`;
+}
 function focusedDetailsModalHtml(d,qs){
   const questionCards = qs.map((q,i)=>"<article class='focused-modal-qcard'><i>"+String(i+1).padStart(2,"0")+"</i><div><b>"+escapeHtml(q.type||"Question")+"</b><h4>"+escapeHtml(q.title||"Assessment question")+"</h4><small>Scored response</small></div></article>").join("");
   const assessmentName = escapeHtml(d.name||"Configured assessment");
@@ -6730,7 +6864,7 @@ function focusedDetailsModalHtml(d,qs){
     "<aside class='focused-modal-ready'><div class='focused-modal-ready-head'><span class='focused-modal-check'>&check;</span><div><h3>Assessment published</h3><p>Ready for your candidate invite.</p></div><strong>100%</strong></div><div class='focused-modal-checklist'><div><i>&check;</i><span><b>Assessment name</b><small>"+assessmentName+"</small></span></div><div><i>&check;</i><span><b>Questions added</b><small>"+qs.length+" questions</small></span></div><div><i>&check;</i><span><b>Duration calculated</b><small>Configured assessment duration</small></span></div></div>"+proctoring+"</aside></div>"+
     "</section></div>";
 }
-function focusedPreviewHtml(){
+function focusedPreviewHtmlLegacy(){
   const d = wizard.data;
   const qs = d.questions || [];
   const skills = String(d.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
@@ -6756,6 +6890,48 @@ function focusedPreviewHtml(){
     <div class="focused-published-actions"><div class="focused-review-copy"><span>Assessment published</span><small>Choose what you want to do next.</small></div><div class="focused-invite-note">Click on the Invite button to experience the assessment.</div><div class="focused-review-tools"><button type="button" onclick="focusedTogglePanel('details')">See assessment details</button><button class="focused-publish" type="button" onclick="publishAssessment({openInvite:true})">Invite <span>â†’</span></button></div></div>
     ${detailsPanelHtml || panelHtml}
     <div class="focused-next"><span>Next step after publishing</span><b>Invite yourself to try the candidate experience</b><small>We’ll take you to the invite page after publishing.</small></div>
+  </div>`;
+}
+function focusedPreviewHtml(){
+  const d = wizard.data;
+  const qs = d.questions || [];
+  const skills = String(d.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const panel = d.focusedPanel || "";
+  const detailsPanelHtml = panel==="details" ? focusedDetailsModalHtml(d,qs) : "";
+  const panelHtml = panel==="questions"
+    ? `<section class="focused-detail-panel"><div class="focused-detail-head"><div><span class="focused-kicker">Included by default</span><h2>Questions</h2></div><button type="button" onclick="focusedTogglePanel('questions')">Close</button></div>${qs.map((q,i)=>`<div class="focused-question"><span>${String(i+1).padStart(2,"0")}</span><div><b>${escapeHtml(q.type||"Question")}</b><p>${escapeHtml(q.title||"")}</p></div></div>`).join("")}</section>`
+    : panel==="settings"
+      ? `<section class="focused-detail-panel"><div class="focused-detail-head"><div><span class="focused-kicker">Recommended defaults</span><h2>Settings</h2></div><button type="button" onclick="focusedTogglePanel('settings')">Close</button></div><div class="focused-settings"><div><b>Duration</b><span>${escapeHtml(String(d.duration||45))} minutes</span></div><div><b>Passing score</b><span>${escapeHtml(String(d.pass||70))}%</span></div><div><b>Integrity</b><span>Webcam and tab monitoring on</span></div><div><b>Candidate experience</b><span>Randomized question order</span></div></div></section>`
+      : "";
+  const publishedId = wizard.publishedId || "";
+  const inviteAction = `openPostPublishInvite('assessment','${publishedId}')`;
+  const aboutCopy = d.description || `Generated from ${d.jdFile || "your job description"}. A focused assessment configured for the ${d.role || "selected role"}.`;
+  const skillPills = (skills.length ? skills : ["Role depth", "Communication", "Problem solving", "Domain knowledge"])
+    .slice(0,4)
+    .map(skill=>`<span>${escapeHtml(skill)}</span>`)
+    .join("");
+  return `<div class="mew focused-preview published-page-shell">
+    <main class="published-page-main">
+      <header class="published-page-hero">
+        <div>
+          <span class="published-page-kicker">Published</span>
+          <h1>Your assessment is ready to <span>invite your first candidate</span></h1>
+          <p>Your assessment is published and ready. View the details or invite your first candidate to take the assessment.</p>
+          <div class="published-page-actions">
+            <button class="published-page-secondary" type="button" onclick="focusedTogglePanel('details')"><span>◉</span> View Assessment details</button>
+            <button class="published-page-primary" type="button" onclick="${inviteAction}"><span>♙</span> Invite candidate</button>
+          </div>
+        </div>
+        <button class="focused-skip published-page-change" type="button" onclick="focusedBackToCreate()">&#8592; Change role</button>
+      </header>
+      <section class="published-page-stats">
+        <div class="published-stat"><span class="published-stat-icon">▣</span><strong>${qs.length || 5}</strong><small>questions</small></div>
+        <div class="published-stat"><span class="published-stat-icon">◷</span><strong>${escapeHtml(String(d.duration||45))}</strong><small>minutes</small></div>
+        <div class="published-stat published-skills"><span class="published-stat-icon">▥</span><div><strong>Skills covered</strong><div class="published-skill-pills">${skillPills}</div></div></div>
+      </section>
+      <section class="published-page-about"><span class="published-about-icon">◉</span><div><h2>About this assessment</h2><p>${escapeHtml(aboutCopy)}</p></div></section>
+      ${detailsPanelHtml || panelHtml}
+    </main>
   </div>`;
 }
 function renderAssessWizard(){
