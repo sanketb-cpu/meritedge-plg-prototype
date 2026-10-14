@@ -708,7 +708,7 @@ body.in-app .toast{background:#1e1b4b}
 .assessment-invite-v2-icon{display:grid;place-items:center;width:25px;height:25px;margin:0 auto 9px;color:#a78bfa;font:800 17px Inter,sans-serif}
 .assessment-invite-v2-summary b{display:block;overflow:hidden;color:#e8efff;font:800 13px/1.2 Inter,sans-serif;text-overflow:ellipsis;white-space:nowrap}
 .assessment-invite-v2-summary small{display:block;margin-top:7px;color:#91a4c2;font:700 9px Inter,sans-serif;letter-spacing:.08em}
-.assessment-invite-v2-before{align-self:stretch;margin:0;padding:20px 19px;border:1px solid rgba(99,102,241,.42);border-radius:15px;background:linear-gradient(145deg,rgba(30,39,78,.7),rgba(11,19,43,.9));box-shadow:0 14px 30px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.06)}
+.assessment-invite-v2-before{align-self:start;margin:0;padding:20px 19px;border:1px solid rgba(99,102,241,.42);border-radius:15px;background:linear-gradient(145deg,rgba(30,39,78,.7),rgba(11,19,43,.9));box-shadow:0 14px 30px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.06)}
 .assessment-invite-v2-form{min-width:0;padding:20px 19px;border:1px solid rgba(99,102,241,.36);border-radius:15px;background:linear-gradient(145deg,rgba(17,25,52,.78),rgba(8,16,35,.9));box-shadow:0 14px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05)}
 .assessment-invite-v2-form-heading span{display:block;color:#67e8f9;font:800 11px Inter,sans-serif;letter-spacing:.1em}
 .assessment-invite-v2-form-heading h2{margin:8px 0 5px;color:#f8fbff;font:800 23px/1.15 Manrope,Inter,sans-serif;letter-spacing:-.03em}
@@ -1457,6 +1457,357 @@ body.demo-open.demo-ended .sitin-back{display:none}
   .dv-dock{justify-content:center}
 }
 
+body.account-focus .te-shell::before,
+body.account-focus .te-header,
+body.account-focus .te-side,
+body.account-focus .te-crumbs,
+body.account-focus #teChecklist {
+  display: none;
+}
+
+body.account-focus .te-body {
+  display: block;
+  min-height: 100vh;
+}
+
+body.account-focus .te-main {
+  min-height: 100vh;
+  padding: 0;
+  overflow: auto;
+}
+
+.account-focus-page {
+  min-height: 100vh;
+  padding: clamp(32px, 6vw, 76px) clamp(20px, 7vw, 110px);
+  color: #f8f9ff;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(109, 56, 211, .27), transparent 33%),
+    radial-gradient(circle at 92% 75%, rgba(0, 191, 194, .14), transparent 32%),
+    #080a13;
+}
+
+.account-focus-header {
+  max-width: 1180px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.account-focus-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: #a98aff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.account-focus-header h1,
+.account-focus-section-head h2 {
+  margin: 0;
+  color: #fff;
+  letter-spacing: -.03em;
+}
+
+.account-focus-header h1 {
+  font-size: clamp(32px, 4vw, 54px);
+}
+
+.account-focus-header p {
+  max-width: 650px;
+  margin: 10px 0 0;
+  color: #aeb7d1;
+  font-size: 16px;
+}
+
+.account-focus-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.account-focus-user {
+  color: #8b96b4;
+  font-size: 13px;
+}
+
+.account-focus-summary,
+.account-focus-list {
+  max-width: 1180px;
+  margin: 0 auto;
+  border: 1px solid rgba(138, 111, 255, .34);
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(29, 21, 57, .94), rgba(8, 28, 38, .94));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .24);
+}
+
+.account-focus-summary {
+  display: grid;
+  grid-template-columns: minmax(150px, .75fr) minmax(150px, .75fr) minmax(280px, 1.5fr);
+  gap: 0;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+
+.account-focus-summary > div {
+  min-height: 118px;
+  padding: 25px 28px;
+  border-right: 1px solid rgba(155, 160, 204, .16);
+}
+
+.account-focus-summary > div:last-child {
+  border-right: 0;
+}
+
+.account-focus-summary span,
+.account-focus-summary small {
+  display: block;
+  color: #9da8c4;
+  font-size: 13px;
+}
+
+.account-focus-summary strong {
+  display: inline-block;
+  margin: 8px 8px 0 0;
+  color: #fff;
+  font-size: 34px;
+  letter-spacing: -.04em;
+}
+
+.account-focus-summary-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.account-focus-summary-copy b {
+  margin-bottom: 7px;
+  color: #fff;
+  font-size: 16px;
+}
+
+.account-focus-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px 30px 20px;
+  border-bottom: 1px solid rgba(155, 160, 204, .16);
+}
+
+.account-focus-section-head h2 {
+  font-size: 26px;
+}
+
+.account-assessment-list {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.account-assessment-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 17px 18px;
+  border: 1px solid rgba(133, 147, 199, .22);
+  border-radius: 16px;
+  background: rgba(9, 14, 31, .72);
+  transition: border-color .2s ease, transform .2s ease, background .2s ease;
+}
+
+.account-assessment-row:hover {
+  border-color: rgba(150, 106, 255, .65);
+  background: rgba(27, 19, 57, .82);
+  transform: translateY(-1px);
+}
+
+.account-assessment-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 15px;
+  color: #fff;
+  background: linear-gradient(145deg, #7342f4, #238ddc);
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.account-assessment-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.account-assessment-title h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+}
+
+.account-assessment-title span {
+  padding: 4px 8px;
+  border: 1px solid rgba(0, 220, 167, .28);
+  border-radius: 999px;
+  color: #39e1b5;
+  background: rgba(0, 220, 167, .08);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-assessment-copy p,
+.account-assessment-copy small {
+  display: block;
+  margin: 5px 0 0;
+  color: #aeb7d1;
+  font-size: 13px;
+}
+
+.account-assessment-copy small {
+  color: #77819e;
+  font-size: 12px;
+}
+
+.account-assessment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.account-assessment-actions .te-btn {
+  min-height: 38px;
+}
+
+.account-report-button {
+  border-color: rgba(156, 115, 255, .58) !important;
+  color: #d1bfff !important;
+}
+
+.account-report-pending {
+  color: #727e9c;
+  font-size: 12px;
+}
+
+.account-focus-empty {
+  padding: 38px 20px;
+  color: #aeb7d1;
+  text-align: center;
+}
+
+html[data-theme="light"] body.account-focus .account-focus-page {
+  color: #111827;
+  background: #f5f7fc;
+}
+
+html[data-theme="light"] body.account-focus .account-focus-header h1,
+html[data-theme="light"] body.account-focus .account-focus-section-head h2,
+html[data-theme="light"] body.account-focus .account-assessment-title h3,
+html[data-theme="light"] body.account-focus .account-focus-summary strong,
+html[data-theme="light"] body.account-focus .account-focus-summary-copy b {
+  color: #111827;
+}
+
+html[data-theme="light"] body.account-focus .account-focus-header p,
+html[data-theme="light"] body.account-focus .account-focus-summary span,
+html[data-theme="light"] body.account-focus .account-focus-summary small,
+html[data-theme="light"] body.account-focus .account-assessment-copy p {
+  color: #65708b;
+}
+
+html[data-theme="light"] body.account-focus .account-focus-summary,
+html[data-theme="light"] body.account-focus .account-focus-list {
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(35, 47, 85, .09);
+}
+
+html[data-theme="light"] body.account-focus .account-assessment-row {
+  border-color: #dfe4f0;
+  background: #f8f9fd;
+}
+
+html[data-theme="light"] body.account-focus .account-assessment-row:hover {
+  background: #f2efff;
+}
+
+@media (max-width: 860px) {
+  .account-focus-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account-focus-header-actions {
+    justify-content: flex-start;
+  }
+
+  .account-focus-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .account-focus-summary > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .account-focus-summary > div:last-child {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(155, 160, 204, .16);
+  }
+
+  .account-assessment-row {
+    grid-template-columns: 52px minmax(0, 1fr);
+  }
+
+  .account-assessment-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .account-focus-page {
+    padding: 28px 14px;
+  }
+
+  .account-focus-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .account-focus-summary > div,
+  .account-focus-summary > div:nth-child(2),
+  .account-focus-summary > div:last-child {
+    border-right: 0;
+    border-top: 1px solid rgba(155, 160, 204, .16);
+  }
+
+  .account-focus-summary > div:first-child {
+    border-top: 0;
+  }
+
+  .account-focus-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 22px 20px 18px;
+  }
+
+  .account-assessment-row {
+    padding: 15px;
+  }
+
+  .account-assessment-actions {
+    flex-wrap: wrap;
+  }
+}
+
 .published-page-shell.focused-preview{min-height:100vh!important;padding:0 0 42px!important;background:radial-gradient(circle at 8% 18%,rgba(75,45,143,.2),transparent 34%),radial-gradient(circle at 96% 80%,rgba(12,91,107,.16),transparent 31%),#080a13;color:#f8fafc}
 .published-page-shell.focused-preview{display:block}
 .published-page-nav{width:min(1180px,calc(100% - 40px));height:64px;margin:0 auto;display:flex;align-items:center;gap:52px;border-bottom:1px solid rgba(148,163,184,.16);color:#91a0b7}
@@ -1812,6 +2163,9 @@ body.create-focus .te-top-logout{display:inline-flex}
 .focused-brandbar{width:min(1180px,100%);margin:0 auto 34px;display:flex;align-items:center;justify-content:flex-end;gap:20px}
 .focused-brandbar.has-logo{justify-content:space-between}
 .focused-brandbar img{width:138px;height:auto;display:block}
+.focused-brand-actions{display:flex;align-items:center;gap:12px}
+.focused-login{padding:10px 18px;border:1px solid rgba(167,139,250,.55);border-radius:11px;background:rgba(15,23,42,.72);color:#f8fafc;font:800 13px Inter,sans-serif;cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+.focused-login:hover{border-color:#c4b5fd;background:rgba(124,58,237,.2);transform:translateY(-1px)}
 .focused-step-badge{display:flex;align-items:center;gap:14px;min-width:256px;padding:4px 14px 4px 7px;border:1px solid rgba(34,211,238,.45);border-radius:13px;background:linear-gradient(100deg,rgba(124,58,237,.22),rgba(6,182,212,.1));color:#f8fafc;font:800 14px Inter,sans-serif;box-shadow:0 0 18px rgba(6,182,212,.08)}
 .focused-step-badge b{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#8b5cf6,#6d28d9);color:#fff;font:800 16px Inter,sans-serif}
 .focused-demo{display:flex;align-items:center;gap:10px;padding:9px 13px;border:1px solid rgba(125,211,252,.24);border-radius:14px;background:linear-gradient(110deg,rgba(124,58,237,.16),rgba(6,182,212,.1));color:#e0f2fe;text-align:left;cursor:pointer;box-shadow:0 10px 26px rgba(6,182,212,.08)}
@@ -1899,7 +2253,7 @@ body.create-focus .te-top-logout{display:inline-flex}
 .focused-detail-panel{width:min(980px,100%);margin:18px auto 0;padding:20px}.focused-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:0 0 14px}.focused-detail-head h2{margin:6px 0 0;font:800 19px Manrope;color:#fff}.focused-question{display:flex;gap:12px;padding:13px 0;border-top:1px solid rgba(255,255,255,.08)}.focused-question>span{color:#a78bfa;font:800 12px ui-monospace,monospace}.focused-question b{color:#c4b5fd;font-size:10px;text-transform:uppercase;letter-spacing:.06em}.focused-question p{margin:4px 0 0;color:#e5e7eb;font-size:13px;line-height:1.4}.focused-settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.focused-settings div{padding:13px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.035)}.focused-settings b,.focused-settings span{display:block}.focused-settings b{color:#fff;font-size:12px}.focused-settings span{margin-top:5px;color:#9ca3af;font-size:12px}
 @media(max-width:900px){.focused-body{grid-template-columns:1fr}.focused-upload{position:static}.focused-jd-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.focused-head{flex-direction:column}.focused-skip{align-self:flex-start}.focused-preview>.focused-head .focused-skip{position:static;margin-top:16px}.focused-bottom{align-items:flex-start;flex-direction:column}.focused-primary{width:100%}.focused-review-actions .focused-publish{margin-left:0;width:100%}}
 @media(max-width:900px){.focused-create-v2 .focused-body{grid-template-columns:1fr}.focused-create-v2 .focused-upload{grid-column:1;grid-row:1}.focused-create-v2 .focused-templates{grid-column:1;grid-row:2}.focused-speed-compare{grid-template-columns:1fr;gap:8px}.focused-speed-vs{margin:0 auto}.focused-step-badge{min-width:220px}}
-@media(max-width:560px){.focused-create,.focused-preview{padding:28px 14px 38px}.focused-brandbar{align-items:flex-start;flex-direction:column;margin-bottom:26px}.focused-brandbar img{width:126px}.focused-demo{width:100%}.focused-templates,.focused-upload{padding:18px}.focused-jd-grid{grid-template-columns:1fr}.focused-section-head{flex-direction:column}.focused-filters{justify-content:flex-start}.focused-preview-card{padding:18px;flex-direction:column}.focused-preview-copy h2{font-size:22px}.focused-settings{grid-template-columns:1fr}}
+@media(max-width:560px){.focused-create,.focused-preview{padding:28px 14px 38px}.focused-brandbar{align-items:flex-start;flex-direction:column;margin-bottom:26px}.focused-brandbar img{width:126px}.focused-brand-actions{width:100%;justify-content:space-between;gap:8px}.focused-step-badge{min-width:0;flex:1}.focused-demo{width:100%}.focused-templates,.focused-upload{padding:18px}.focused-jd-grid{grid-template-columns:1fr}.focused-section-head{flex-direction:column}.focused-filters{justify-content:flex-start}.focused-preview-card{padding:18px;flex-direction:column}.focused-preview-copy h2{font-size:22px}.focused-settings{grid-template-columns:1fr}}
 .mec{max-width:920px;margin:28px auto 0;text-align:center}
 .mec>h2{margin:0 0 8px;font:700 22px/1.3 Inter,sans-serif;color:#fff}
 .mec>p{margin:0 0 28px;color:#9ca3af;font-size:14px}

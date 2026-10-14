@@ -1254,9 +1254,9 @@ function showSignupStep(n){
   const box = document.getElementById("signupContent");
   if(n===1){
     const invite = signupReason === "invite";
-    box.innerHTML = `<h2 id="signupTitle">${invite ? "Sign up to invite yourself" : "Create your account"}</h2>
+    box.innerHTML = `<h2 id="signupTitle">${invite ? "Sign up to invite" : "Create your account"}</h2>
       <p class="modalcopy">${invite
-        ? "Sign up so you can invite yourself and experience the candidate side — take the MeritEdge assessment or AI Interview the way a candidate would."
+        ? "Sign up so you can send an invite and experience the candidate side — take the MeritEdge assessment or AI Interview the way a candidate would."
         : "Enter your details. We will send a one-time code to verify your work email, then start the product tour."}</p>
       <label class="field"><span>Full name</span><input id="fullName" placeholder="e.g. Alex Morgan" autocomplete="name" value="${escapeHtml(signupData.name||"")}"></label>
       <label class="field"><span>Work email</span><input id="workEmail" type="email" placeholder="you@company.com" autocomplete="email" value="${escapeHtml(signupData.email||"")}" oninput="fillSignupFromEmail()" onblur="fillSignupFromEmail()"></label>
@@ -1269,7 +1269,7 @@ function showSignupStep(n){
     setProgress(2);
     box.innerHTML = `<h2 id="signupTitle">Verify your email</h2>
       <p class="otp-mail">We sent a 6-digit code to <b>${escapeHtml(signupData.email)}</b></p>
-      <p class="modalcopy" style="margin-bottom:8px">${signupReason==="invite"?"Enter the code to sign up. Then you can invite yourself and experience the candidate side.":"Enter the code to finish creating your workspace."}</p>
+      <p class="modalcopy" style="margin-bottom:8px">${signupReason==="invite"?"Enter the code to sign up. Then you can send an invite and experience the candidate side.":"Enter the code to finish creating your workspace."}</p>
       <div class="demo-note" id="otpNote">Use <b>123456</b> — nothing is emailed.</div>
       ${signupReason==="invite"
         ? `<label class="field"><span>Verification code</span><input id="otpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456" aria-label="Verification code" oninput="otpCodeInput()" onkeydown="if(event.key==='Enter')verifyDemoCode()"></label>`
@@ -1291,7 +1291,7 @@ function showSignupStep(n){
     drawSignupVerify();
   } else {
     setProgress(3);
-    box.innerHTML = `<div class="su-wait"><div class="g-spin"></div><h2 id="signupTitle">${signupReason==="invite"?"Unlocking invite yourself":"Opening your workspace"}</h2><p class="modalcopy">${signupReason==="invite"?"Email verified. Next you can invite yourself and experience the candidate side.":"Email verified. Starting the product tour."}</p></div>`;
+    box.innerHTML = `<div class="su-wait"><div class="g-spin"></div><h2 id="signupTitle">${signupReason==="invite"?"Unlocking invite":"Opening your workspace"}</h2><p class="modalcopy">${signupReason==="invite"?"Email verified. Next you can send an invite and experience the candidate side.":"Email verified. Starting the product tour."}</p></div>`;
   }
 }
 
@@ -1584,7 +1584,7 @@ function startLoginSlides(){
     setLoginSlide((loginSlide+1)%LOGIN_SLIDES.length);
   }, 6000);
 }
-function signOut(){ stopTourVoice(); clearTourAdvance(); closeTourIntro(); closeDemoReel(); closeTrialJourney(); closeBillJourney(); closeReferShare(); closeSso(); closeWow(); tour=null; document.body.classList.remove("tour-lock"); document.getElementById("tourOverlay")?.classList.remove("open"); state.session=null; saveState(); showView("landing"); }
+function signOut(){ stopTourVoice(); clearTourAdvance(); closeTourIntro(); closeDemoReel(); closeTrialJourney(); closeBillJourney(); closeReferShare(); closeSso(); closeWow(); tour=null; document.body.classList.remove("tour-lock"); document.getElementById("tourOverlay")?.classList.remove("open"); state.session=null; saveState(); enterSalesPreview(); }
 
 const G_ICO = `<svg class="sso-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`;
 const MS_ICO = `<svg class="sso-ico" viewBox="0 0 21 21" aria-hidden="true"><rect width="10" height="10" fill="#F25022"/><rect x="11" width="10" height="10" fill="#7FBA00"/><rect y="11" width="10" height="10" fill="#00A4EF"/><rect x="11" y="11" width="10" height="10" fill="#FFB900"/></svg>`;
@@ -1893,11 +1893,10 @@ function backToAssessments(){
   closeCandExam();
   closeInviteMail();
   inviteMail = null;
-  appSection = "meritedge";
+  appSection = "account-assessments";
   appDetail = null;
   wizard = null;
   showView("workspace");
-  renderWorkspace();
 }
 function resumePendingCreate(){
   const kind = pendingCreate;
@@ -3655,6 +3654,37 @@ function accountReportsHtml(u, compact=false){
   if(compact) return `<section class="te-account-card focused-account-card"><div class="te-account-card-head"><div><label>Saved reports</label><h2>${reports.length ? `${reports.length} report${reports.length===1?"":"s"} from your free invites` : "No saved reports yet"}</h2></div><button class="te-btn ghost" type="button" onclick="openUpgradePlans()">Upgrade to paid plan</button></div><div class="te-account-reports">${reportRows}</div></section>`;
   return `<section class="te-account-card"><div class="te-account-card-head"><div><label>Your free workspace</label><h2>${balance.left} free invite${balance.left===1?"":"s"} remaining</h2><p>Every completed invite creates a report saved to ${escapeHtml(u?.email||"your account")}.</p></div><button class="te-btn ghost" type="button" onclick="openUpgradePlans()">Upgrade to paid plan</button></div><div class="te-account-stats"><span><b>${balance.left}</b> invites left</span><span><b>${reports.length}</b> reports saved</span><span><b>5</b> free invites included</span></div><div class="te-account-reports">${reportRows}</div><p class="te-note" style="margin:12px 0 0">Upgrade to unlock the full platform experience, including unlimited workspace access and advanced insights.</p></section>`;
 }
+function accountAssessmentsPageHtml(u){
+  const reports = u?.reports || [];
+  const reportIds = new Set(reports.map(r=>r.itemId));
+  const created = assessments.filter(a=>a.userBuilt || a.createdBy===u?.name || reportIds.has(a.id));
+  const items = created.length ? created : assessments.slice(0,6);
+  const balance = freeInviteBalance(u);
+  const rows = items.map(a=>{
+    const report = reports.find(r=>r.itemId===a.id);
+    const questionCount = a.qcount || a.questions?.length || 5;
+    return `<article class="account-assessment-row">
+      <div class="account-assessment-icon">${escapeHtml(initials(a.title||"A"))}</div>
+      <div class="account-assessment-copy">
+        <div class="account-assessment-title"><h3>${escapeHtml(a.title)}</h3><span>${escapeHtml(a.status||"Published")}</span></div>
+        <p>${escapeHtml(a.role||"Role-based assessment")} · ${questionCount} questions · ${escapeHtml(a.duration||"45 min")}</p>
+        <small>Created ${escapeHtml(a.created||"Recently")}</small>
+      </div>
+      <div class="account-assessment-actions">
+        <button class="te-btn ghost" type="button" onclick="startInvite('assessment','${escapeHtml(a.id)}')">Invite</button>
+        ${report ? `<button class="te-btn account-report-button" type="button" onclick="openAccountReport('${escapeHtml(report.id)}')">View report</button>` : `<span class="account-report-pending">No report yet</span>`}
+      </div>
+    </article>`;
+  }).join("");
+  return `<div class="account-focus-page">
+    <header class="account-focus-header">
+      <div><span class="account-focus-kicker">MERITEDGE</span><h1>Your assessments</h1><p>Manage created assessments, invite candidates, and open saved reports.</p></div>
+      <div class="account-focus-header-actions"><span class="account-focus-user">Logged in as ${escapeHtml(u?.email||u?.name||"your account")}</span><button class="te-btn ghost" type="button" onclick="openUpgradePlans()">Upgrade plan</button><button class="te-btn ghost" type="button" onclick="signOut()">Log out</button></div>
+    </header>
+    <section class="account-focus-summary"><div><span>Free invite credits</span><strong>${balance.left}</strong><small>remaining</small></div><div><span>Saved reports</span><strong>${reports.length}</strong><small>candidate reports</small></div><div class="account-focus-summary-copy"><b>Keep exploring your hiring workflow</b><small>Invite candidates with your free credits and view each completed report here.</small></div></section>
+    <section class="account-focus-list"><div class="account-focus-section-head"><div><span class="account-focus-kicker">CREATED ASSESSMENTS</span><h2>Ready to invite candidates</h2></div><button class="te-btn" type="button" onclick="startCreateAssessment({focused:true})">Create assessment</button></div><div class="account-assessment-list">${rows || `<div class="account-focus-empty">No assessments created yet.</div>`}</div></section>
+  </div>`;
+}
 function appNav(section){
   if(tour) return;
   openKebab = null;
@@ -4833,6 +4863,7 @@ function cxCtx(){
 }
 function cxGo(step){
   if(!candExam) return;
+  candExam._advancing = false;
   if(step==="sec2"){
     cxFinishExam();
     return;
@@ -4861,14 +4892,6 @@ function cxAutoAnswer(step){
   candExam._auto = setTimeout(()=>{
     if(!candExam || candExam.step!==step) return;
     cxPick(answer);
-    candExam._auto = setTimeout(()=>{
-      if(!candExam || candExam.step!==step) return;
-      if(step==="q3"){
-        cxFinishExam();
-      } else {
-        cxNextQ();
-      }
-    }, AUTO_PAGE_WAIT);
   }, AUTO_PAGE_WAIT);
 }
 function cxTickCheck(){
@@ -4892,7 +4915,26 @@ function cxTickCheck(){
   drawCandExam();
   candExam._t = setTimeout(cxTickCheck, 420);
 }
-function cxPick(k){ if(!candExam) return; candExam.pick[candExam.step]=k; drawCandExam(); }
+function cxPick(k){
+  if(!candExam || !/^q[123]$/.test(candExam.step) || candExam._advancing) return;
+  const step = candExam.step;
+  const {cand} = cxCtx();
+  candExam.pick[step] = k;
+  candExam._advancing = true;
+  candExam.savedAt = Date.now();
+  if(cand){
+    cand.answers = Object.assign({}, cand.answers || {}, {[step]:k});
+    saveState();
+  }
+  drawCandExam();
+  clearTimeout(candExam._auto);
+  candExam._auto = setTimeout(()=>{
+    if(!candExam || candExam.step!==step) return;
+    candExam._advancing = false;
+    if(step==="q3") cxFinishExam();
+    else cxNextQ();
+  }, 320);
+}
 function cxAgree(){ candExam.agree = !candExam.agree; drawCandExam(); }
 function cxNextQ(){
   const order = ["q1","q2","q3"];
@@ -6943,6 +6985,8 @@ function focusedCreateHtmlLegacy(){
 }
 function focusedCreateHtml(){
   const d = wizard.data;
+  const previewUser = currentUser();
+  const previewLogin = previewUser?.kind === "preview" ? `<button class="focused-login" type="button" onclick="showView('login')">Log in</button>` : "";
   const selected = jdById(d.jdId);
   const domainGroups = focusedDomainGroups();
   const activeDomain = d.focusedDomain || "";
@@ -6954,7 +6998,7 @@ function focusedCreateHtml(){
   return `<div class="mew focused-create focused-create-v2">
     <div class="focused-brandbar has-logo">
       <img src="assets/otomeyt-ai-logo.svg" alt="Otomeyt AI">
-      <div class="focused-step-badge"><b>1</b><span>Create Your Assessment</span></div>
+      <div class="focused-brand-actions">${previewLogin}<div class="focused-step-badge"><b>1</b><span>Create Your Assessment</span></div></div>
     </div>
     <div class="focused-head">
       <div>
@@ -7829,6 +7873,7 @@ function renderWorkspace(){
   const focusedCreate = !!(appDetail?.type==="wizard" && wizard?.data?.focusedCreate);
   document.body.classList.toggle("me-wiz-on", !!(appDetail?.type==="wizard" && wizard));
   document.body.classList.toggle("create-focus", focusedCreate);
+  document.body.classList.toggle("account-focus", appSection==="account-assessments");
   document.body.classList.toggle("preview-focus", !!(u.kind==="preview" && appDetail?.type==="wizard" && wizard?.data?.focusedCreate));
   syncPremiumSample();
   renderNav();
@@ -8010,6 +8055,11 @@ function renderWorkspace(){
   }
   if(appDetail?.type==="report"){
     content.innerHTML = renderCandidateReport();
+    return;
+  }
+
+  if(appSection==="account-assessments"){
+    content.innerHTML = accountAssessmentsPageHtml(u);
     return;
   }
 
