@@ -1888,6 +1888,17 @@ function backToCreateAssessment(){
   showView("workspace");
   startCreateAssessment({focused:true});
 }
+
+function backToAssessments(){
+  closeCandExam();
+  closeInviteMail();
+  inviteMail = null;
+  appSection = "meritedge";
+  appDetail = null;
+  wizard = null;
+  showView("workspace");
+  renderWorkspace();
+}
 function resumePendingCreate(){
   const kind = pendingCreate;
   pendingCreate = null;
@@ -4534,7 +4545,7 @@ function inviteCandidate(kind, id, candId){
   const item = inviteItem(kind, id);
   return (item?.candidates||[]).find(c=>c.id===candId);
 }
-function assessmentInviteBannerHtml(cand, fromName, role, qn, mins, isFree){
+function assessmentInviteBannerHtmlLegacy(cand, fromName, role, qn, mins, isFree){
   return `<div class="assessment-invite-shell" role="dialog" aria-modal="true" aria-labelledby="assessment-invite-title">
     <button class="assessment-invite-close" type="button" onclick="closeInviteMail()" aria-label="Close invitation">×</button>
     <article class="assessment-invite-banner">
@@ -4551,17 +4562,83 @@ function assessmentInviteBannerHtml(cand, fromName, role, qn, mins, isFree){
           <div><span>Questions</span><b>${qn}</b></div>
           <div><span>Duration</span><b>${mins} minutes</b></div>
         </div>
+        <section class="assessment-invite-before" aria-labelledby="assessment-invite-before-title">
+          <b id="assessment-invite-before-title">Before you begin</b>
+          <div>
+            <span>&#10003; Stable internet required</span>
+            <span>&#10003; Don’t switch tabs</span>
+            <span>&#10003; Timer starts on begin</span>
+            <span>&#10003; Answer each question before continuing</span>
+          </div>
+        </section>
         <button class="assessment-invite-start" type="button" onclick="startInvitedAttempt()">Start Assessment <span>→</span></button>
         <small>${isFree?"Sample assessment · Your results will be ready after you finish.":"Take your time and answer each question carefully."}</small>
       </div>
     </article>
   </div>`;
 }
+function assessmentInviteBannerHtml(cand, fromName, role, qn, mins, isFree){
+  const durationLabel = `${mins} minutes`;
+  return `<div class="assessment-invite-shell assessment-invite-v2-shell" role="dialog" aria-modal="true" aria-labelledby="assessment-invite-title">
+    <div class="assessment-invite-v2-combined">
+    <article class="assessment-invite-banner assessment-invite-v2-banner">
+      <button class="assessment-invite-close" type="button" onclick="closeInviteMail()" aria-label="Close invitation">&#215;</button>
+      <header class="assessment-invite-v2-header">
+        <div class="assessment-invite-v2-brand">
+          <img src="assets/otomeyt-ai-logo.svg" alt="Otomeyt AI">
+        </div>
+        <div class="assessment-invite-v2-badge"><span>&#9889;</span> No live time slot to coordinate</div>
+      </header>
+      <nav class="assessment-invite-v2-steps" aria-label="Assessment progress">
+        <div class="active"><i>01</i><b>DETAILS</b></div><span></span>
+        <div><i>02</i><b>ASSESSMENT</b></div><span></span>
+        <div><i>03</i><b>REPORT</b></div>
+      </nav>
+      <div class="assessment-invite-v2-layout">
+        <section class="assessment-invite-v2-intro">
+          <span class="assessment-invite-v2-kicker">STEP 1 OF 3</span>
+          <h1 id="assessment-invite-title">Know what to expect<br>before you begin</h1>
+          <p>A focused, fair assessment to evaluate your skills for the <b>${escapeHtml(role)}</b> role.</p>
+          <div class="assessment-invite-v2-summary">
+            <div><span class="assessment-invite-v2-icon">&#128203;</span><b>${escapeHtml(role)}</b><small>ASSESSMENT</small></div>
+            <div><span class="assessment-invite-v2-icon">?</span><b>${qn}</b><small>QUESTIONS</small></div>
+            <div><span class="assessment-invite-v2-icon">&#9716;</span><b>${mins} minutes</b><small>DURATION</small></div>
+          </div>
+        </section>
+        <section class="assessment-invite-v2-form" aria-labelledby="assessment-invite-details-title">
+          <div class="assessment-invite-v2-form-heading">
+            <span>YOUR DETAILS</span>
+            <h2 id="assessment-invite-details-title">Ready to get started?</h2>
+            <p>Confirm the details linked to your invitation before beginning.</p>
+          </div>
+          <label>Full Name<input value="${escapeHtml(cand.name||"")}" readonly></label>
+          <label>Email<input value="${escapeHtml(cand.email||"")}" readonly></label>
+          <label class="assessment-invite-v2-consent"><input type="checkbox" onchange="inviteAgree(this.checked)"> <span>I agree to the Terms &amp; Conditions and consent to data collection for this assessment.</span></label>
+        </section>
+      </div>
+      <button class="assessment-invite-start assessment-invite-v2-start" type="button" disabled onclick="startInvitedAttempt(true)">Start ${escapeHtml(durationLabel)} assessment <span>&#8594;</span></button>
+      <div class="assessment-invite-v2-footer"><span>&#128272;</span> Your responses are evaluated fairly and securely.</div>
+    </article>
+    <section class="assessment-invite-before assessment-invite-v2-before" aria-labelledby="assessment-invite-before-title">
+      <b id="assessment-invite-before-title">BEFORE YOU BEGIN</b>
+      <div class="assessment-invite-v2-before-item">
+        <i>&#10003;</i><div><strong>Timer starts when you begin</strong><p>You’ll have ${escapeHtml(durationLabel)} to complete the assessment once you start.</p></div>
+      </div>
+      <div class="assessment-invite-v2-before-item">
+        <i>&#10003;</i><div><strong>Keep this page open</strong><p>For the best experience, avoid switching tabs during the assessment.</p></div>
+      </div>
+      <div class="assessment-invite-v2-before-item">
+        <i>&#10003;</i><div><strong>Assessment monitoring settings are shown before start</strong><p>You’ll see a clear summary of what’s enabled before the assessment begins.</p></div>
+      </div>
+    </section>
+    </div>
+  </div>`;
+}
 function openInviteMail(kind, id, candId){
   const item = inviteItem(kind, id);
   const cand = inviteCandidate(kind, id, candId);
   if(!item || !cand) return;
-  inviteMail = {kind, id, candId};
+  inviteMail = {kind, id, candId, agree:false};
   const el = document.getElementById("inviteMailOverlay");
   if(!el) return;
   const u = currentUser() || {};
@@ -4702,24 +4779,30 @@ function saveAccountReport(kind, itemId, candidateId, item, cand){
   else u.reports.unshift(report);
   saveState();
 }
-function startInvitedAttempt(){
+function inviteAgree(value){
   if(!inviteMail) return;
+  inviteMail.agree = !!value;
+  document.querySelector(".assessment-invite-v2-start")?.toggleAttribute("disabled", !inviteMail.agree);
+}
+function startInvitedAttempt(requireConsent=false){
+  if(!inviteMail) return;
+  if(requireConsent && !inviteMail.agree){ toast("Please accept the terms before starting."); return; }
   const cand = inviteCandidate(inviteMail.kind, inviteMail.id, inviteMail.candId);
   if(cand && cand.status==="Invited") cand.status = "In progress";
   document.getElementById("inviteMailOverlay")?.classList.remove("open");
   if(inviteMail.kind==="interview") openIvSession();
-  else openCandExam();
+  else openCandExam(true);
 }
 let candExam = null;
 let ivSess = null;
 let ivReportTab = "session";
 const CX_QS = __D.examQuestions;
-function openCandExam(){
+function openCandExam(startAssessment=false){
   if(!inviteMail) return;
   clearTimeout(candExam?._t);
   clearTimeout(candExam?._auto);
   const lite = freeCandidate();
-  candExam = {step:"details", checks:Array(lite?3:5).fill(0), pick:{}, agree:false, photo:false, qn:0, tab:false, lite, auto:lite, _auto:null};
+  candExam = {step:startAssessment ? (lite ? "q1" : "sec1") : "details", checks:Array(lite?3:5).fill(0), pick:{}, agree:startAssessment, photo:false, qn:0, tab:false, lite, auto:lite, _auto:null};
   const el = document.getElementById("candExamOverlay");
   if(!el) return;
   el.classList.add("open");
@@ -4964,6 +5047,70 @@ function drawCandExam(){
     const qi = step==="q1"?0:step==="q2"?1:2;
     const q = CX_QS[qi];
     const sel = candExam.pick[step];
+    const questionTotal = 3;
+    const answered = ["q1","q2","q3"].filter(k=>candExam.pick[k]).length;
+    const assessmentRole = item.role || item.title || "Assessment";
+    const roleLabel = String(assessmentRole).replace(/\s*assessment$/i, "").trim() || "Assessment";
+    const roleTerm = roleLabel.replace(/\s*engineer$/i, "").trim().toLowerCase() || "backend";
+    const topicLabel = item.topics && item.topics[0] && (item.topics[0].title || item.topics[0].name) || "API design";
+    const timer = `${String(Math.max(1, mins-qi)).padStart(2,"0")}:${String(35-qi*4).padStart(2,"0")}`;
+    const progress = Math.round(((qi+1)/questionTotal)*100);
+    const opts = q.opts.map(o=>`<button class="qtest-merit-option ${sel===o.k?"on":""}" data-cx-option="${o.k}" type="button" role="radio" aria-checked="${sel===o.k}" onclick="cxPick('${o.k}')"><span class="qtest-merit-option-key">${o.k}</span><span class="qtest-merit-option-copy">${escapeHtml(o.t)}</span><span class="qtest-merit-radio" aria-hidden="true"></span></button>`).join("");
+    const last = qi===2;
+    el.innerHTML = `<div class="qtest qtest-merit">
+      <header class="qtest-merit-head">
+        <div class="qtest-merit-head-inner">
+          <div class="qtest-merit-brand"><span class="qtest-merit-logo">A</span><b>MeritEdge</b></div>
+          <div class="qtest-merit-progress"><span>Section 1 of 3</span><div class="qtest-merit-progress-track"><i style="width:${progress}%"></i></div></div>
+          <div class="qtest-merit-progress"><span>Question ${qi+1} of ${questionTotal}</span><div class="qtest-merit-progress-track"><i style="width:${progress}%"></i></div></div>
+          <div class="qtest-merit-timer"><span aria-hidden="true">&#9673;</span><div><b>${timer}</b><small>Time remaining</small></div></div>
+        </div>
+      </header>
+      ${!lite && q.tab && candExam.tab?`<div class="cx-tab qtest-merit-tab">Tab switch 0/3 &mdash; 3 remaining. Return to the exam window.</div>`:""}
+      <main class="qtest-merit-main">
+        <aside class="qtest-merit-sidebar">
+          <h2>Your assessment</h2>
+          <div class="qtest-merit-meta"><span aria-hidden="true">&#128188;</span><span>${escapeHtml(roleLabel)}</span></div>
+          <div class="qtest-merit-meta"><span aria-hidden="true">&#9776;</span><span>${questionTotal} questions</span></div>
+          <div class="qtest-merit-meta"><span aria-hidden="true">&#9673;</span><span>${mins} minutes</span></div>
+          <div class="qtest-merit-divider"></div>
+          <nav class="qtest-merit-questions" aria-label="Assessment questions">
+            <button type="button" class="qtest-merit-question ${qi===0?"on":""}" onclick="cxGo('q1')"><span class="qtest-merit-question-num">1</span><span class="qtest-merit-question-copy"><b>Question 1</b><small>${qi===0?"Current question":candExam.pick.q1?"Completed":"Later"}</small></span></button>
+            <button type="button" class="qtest-merit-question ${qi===1?"on":""}" onclick="cxGo('q2')"><span class="qtest-merit-question-num">2</span><span class="qtest-merit-question-copy"><b>Question 2</b><small>${qi===1?"Current question":candExam.pick.q2?"Completed":qi<1?"Next":"Later"}</small></span></button>
+            <button type="button" class="qtest-merit-question ${qi===2?"on":""}" onclick="cxGo('q3')"><span class="qtest-merit-question-num">3</span><span class="qtest-merit-question-copy"><b>Question 3</b><small>${qi===2?"Current question":candExam.pick.q3?"Completed":"Later"}</small></span></button>
+          </nav>
+        </aside>
+        <section class="qtest-merit-content">
+          <h1>Show how you approach <span class="qtest-merit-accent">real ${escapeHtml(roleTerm)} decisions.</span></h1>
+          <p class="qtest-merit-subtitle">A role-relevant scenario about evolving an API without disrupting teams that rely on it.</p>
+          <div class="qtest-merit-chips"><span class="qtest-merit-chip role">${escapeHtml(roleLabel)}</span><span class="qtest-merit-chip">&#8599;&nbsp; ${escapeHtml(topicLabel)}</span></div>
+          <div class="qtest-merit-grid">
+            <div>
+              <article class="qtest-merit-question-panel"><span class="qtest-merit-question-label">QUESTION</span><p>${escapeHtml(q.q)}</p></article>
+              <div class="qtest-merit-options">${opts}</div>
+            </div>
+            <aside class="qtest-merit-insight"><span class="qtest-merit-insight-icon">ⓘ</span><h2>Choose your approach</h2><p>Choose the approach you think best minimizes client breakage. You can mark this question for review.</p></aside>
+          </div>
+        </section>
+      </main>
+      <footer class="qtest-merit-footer">
+        <div class="qtest-merit-footer-inner">
+          <button class="qtest-merit-button" type="button" onclick="candExam.step==='q1'?cxGo('sec1'):cxGo(candExam.step==='q3'?'q2':'q1')">←&nbsp; Back</button>
+          <div class="qtest-merit-note">ⓘ&nbsp; Your answer will be included in your candidate report</div>
+          <div class="qtest-merit-actions">
+            <button class="qtest-merit-button" type="button" onclick="toast('Flagged for review.')">♧&nbsp; Mark for review</button>
+            ${last?"":`<button class="qtest-merit-button" type="button" onclick="cxNextQ()">Skip</button>`}
+            <button class="qtest-merit-button next" type="button" onclick="${last?"cxFinishExam()":"cxNextQ()"}">${last?"Submit assessment":"Next"}&nbsp; →</button>
+          </div>
+        </div>
+      </footer>
+    </div>`;
+    return;
+  }
+  if(false && step==="q1"||false && step==="q2"||false && step==="q3"){
+    const qi = step==="q1"?0:step==="q2"?1:2;
+    const q = CX_QS[qi];
+    const sel = candExam.pick[step];
     const totalQ = lite ? 3 : 12;
     const answered = ["q1","q2","q3"].filter(k=>candExam.pick[k]).length;
     const pills = Array.from({length:totalQ},(_,i)=>{
@@ -5086,7 +5233,7 @@ def query_singers(singers: list[dict], query: str, current_year: int = 2021) -> 
     const skills = (r.skills||[]).slice(0,3).map(s=>`<article class="cx-report-skill"><div><b>${escapeHtml(s.name||"Skill")}</b><span>${escapeHtml(String(s.pct||0))}%</span></div><i><em style="width:${Math.max(0,Math.min(100,Number(s.pct)||0))}%"></em></i></article>`).join("");
     const passLabel = score >= 70 ? "Above passing" : "Preview score";
     el.innerHTML = `<div class="cx-report-page">
-      <header class="cx-report-top"><button class="cx-report-back" type="button" onclick="backToCreateAssessment()">← Back to create assessment</button><div class="cx-report-brand"><span class="cx-report-brand-mark">✓</span><div><b>Candidate report</b><small>Private assessment preview</small></div></div><div class="cx-report-top-meta"><span>Logged in as ${escapeHtml(email)}</span><b>5 free invite credits included</b></div></header>
+      <header class="cx-report-top"><button class="cx-report-back" type="button" onclick="backToAssessments()">← Back to Assessments</button><div class="cx-report-brand"><span class="cx-report-brand-mark">✓</span><div><b>Candidate report</b><small>Private assessment preview</small></div></div><div class="cx-report-top-meta"><span>Logged in as ${escapeHtml(email)}</span><b>5 free invite credits included</b></div></header>
       <main class="cx-report-main">
         <div class="cx-report-crumb">Assessment result <span>·</span> ${escapeHtml(item.title||"Assessment")}</div>
         <section class="cx-report-hero">
@@ -6811,7 +6958,7 @@ function focusedCreateHtml(){
     </div>
     <div class="focused-head">
       <div>
-        <h1>Skip building every question <span>by hand.</span></h1>
+        <h1>Skip building every question <span>manually.</span></h1>
         <p>Upload a job description or pick a role &mdash; we&rsquo;ll create a role-mapped assessment with recommended questions, duration, scoring, and candidate settings.</p>
       </div>
     </div>
@@ -6864,10 +7011,23 @@ function focusedDetailsModalHtml(d,qs){
     "<aside class='focused-modal-ready'><div class='focused-modal-ready-head'><span class='focused-modal-check'>&check;</span><div><h3>Assessment published</h3><p>Ready for your candidate invite.</p></div><strong>100%</strong></div><div class='focused-modal-checklist'><div><i>&check;</i><span><b>Assessment name</b><small>"+assessmentName+"</small></span></div><div><i>&check;</i><span><b>Questions added</b><small>"+qs.length+" questions</small></span></div><div><i>&check;</i><span><b>Duration calculated</b><small>Configured assessment duration</small></span></div></div>"+proctoring+"</aside></div>"+
     "</section></div>";
 }
+function focusedDetailsModalHtmlV2(d,qs){
+  const skillLabels = String(d.skills||"").split(",").map(skill=>skill.trim()).filter(Boolean);
+  const questionCards = qs.map((q,i)=>{
+    const skill = skillLabels[i % Math.max(skillLabels.length,1)] || "Role alignment";
+    const type = String(q.type||((i % 2) ? "Written" : "MCQ")).toUpperCase();
+    return "<article class='focused-modal-v2-qcard "+(i===0?"is-highlighted":"")+"'><i>"+String(i+1).padStart(2,"0")+"</i><div class='focused-modal-v2-qbody'><div class='focused-modal-v2-qmeta'><b>"+escapeHtml(type)+"</b><span>"+escapeHtml(skill)+"</span></div><h4>"+escapeHtml(q.title||"Assessment question")+"</h4></div></article>";
+  }).join("");
+  const questionSkill = skillLabels[0] || "role-aligned skills";
+  const proctoring = "<section class='focused-modal-v2-proctoring'><div class='focused-modal-v2-side-head'><div><span class='focused-modal-v2-shield'>&#9670;</span><h3>Security &amp; Proctoring</h3></div><span>3 features</span></div><div class='focused-modal-v2-info'><b>&#9432;</b><span>Review monitoring settings before inviting candidates.</span></div><div class='focused-modal-v2-monitor-label'>IN-TEST MONITORING</div><div class='focused-modal-v2-monitor-row'><i>&#9673;</i><b>Webcam monitoring</b><small>Enabled</small><strong>&check;</strong></div><div class='focused-modal-v2-monitor-row'><i>&#9633;</i><b>Tab switch detection</b><small>Enabled</small><strong>&check;</strong></div><div class='focused-modal-v2-monitor-row'><i>&#9635;</i><b>Copy/paste block</b><small>Enabled</small><strong>&check;</strong></div></section>";
+  return "<div class='focused-modal-backdrop' role='presentation' onclick='focusedTogglePanel(\"details\")'><section class='focused-detail-modal focused-modal-v2' role='dialog' aria-modal='true' aria-labelledby='focused-details-title' onclick='event.stopPropagation()'>"+
+    "<div class='focused-modal-v2-header'><div class='focused-modal-v2-title-wrap'><div class='focused-modal-v2-step'><span>2</span><b>ASSESSMENT DETAILS</b></div><h2 id='focused-details-title'>Review the <em>skill coverage</em> without manually checking every question.</h2><p>See how each question maps to the key skills from the role description.</p></div><button class='focused-modal-close' type='button' aria-label='Close assessment details' onclick='focusedTogglePanel(\"details\")'>&times;</button></div>"+
+    "<div class='focused-modal-v2-layout'><section class='focused-modal-v2-blueprint'><div class='focused-modal-v2-blueprint-head'><span>ASSESSMENT BLUEPRINT</span><strong>"+qs.length+" questions</strong></div><div class='focused-modal-v2-question-list'>"+questionCards+"</div></section><aside class='focused-modal-v2-sidebar'><section class='focused-modal-v2-why'><div class='focused-modal-v2-side-head'><div><span class='focused-modal-v2-spark'>&#10022;</span><h3>Why this question?</h3></div><button type='button' aria-label='Close explanation' onclick='focusedTogglePanel(\"details\")'>&times;</button></div><p>It checks <b>"+escapeHtml(questionSkill)+"</b> from the role description.</p><p>Evaluates your ability to choose the right metric to investigate growth and retention trends.</p></section>"+proctoring+"</aside></div>"+
+    "</section></div>";
+}
 function focusedPreviewHtmlLegacy(){
   const d = wizard.data;
   const qs = d.questions || [];
-  const skills = String(d.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
   const panel = d.focusedPanel || "";
   const detailsPanelHtml = panel==="details" ? focusedDetailsModalHtml(d,qs) : "";
   const panelHtml = panel==="questions"
@@ -6895,8 +7055,7 @@ function focusedPreviewHtmlLegacy(){
 function focusedPreviewHtml(){
   const d = wizard.data;
   const qs = d.questions || [];
-  const skills = String(d.skills||"").split(",").map(s=>s.trim()).filter(Boolean);
-  const panel = d.focusedPanel || "";
+    const panel = d.focusedPanel || "";
   const detailsPanelHtml = panel==="details" ? focusedDetailsModalHtml(d,qs) : "";
   const panelHtml = panel==="questions"
     ? `<section class="focused-detail-panel"><div class="focused-detail-head"><div><span class="focused-kicker">Included by default</span><h2>Questions</h2></div><button type="button" onclick="focusedTogglePanel('questions')">Close</button></div>${qs.map((q,i)=>`<div class="focused-question"><span>${String(i+1).padStart(2,"0")}</span><div><b>${escapeHtml(q.type||"Question")}</b><p>${escapeHtml(q.title||"")}</p></div></div>`).join("")}</section>`
@@ -6934,6 +7093,49 @@ function focusedPreviewHtml(){
     </main>
   </div>`;
 }
+function focusedPublishedReferenceHtml(){
+  const d = wizard.data;
+  const qs = d.questions || [];
+  const panel = d.focusedPanel || "";
+  const detailsPanelHtml = panel==="details" ? focusedDetailsModalHtmlV2(d,qs) : "";
+  const publishedId = wizard.publishedId || "";
+  const inviteAction = `openPostPublishInvite('assessment','${publishedId}')`;
+  const questionCount = qs.length || 5;
+  const duration = String(d.duration||45);
+  const aboutCopy = d.description || `Generated from ${d.jdFile || "your job description"}. A focused assessment configured for the ${d.role || "selected role"}.`;
+  return `<div class="mew focused-preview published-page-shell">
+    <main class="published-reference-main">
+      <div class="published-reference-topline">
+        <img class="published-reference-logo" src="assets/otomeyt-ai-logo.svg" alt="Otomeyt AI">
+        <div class="published-reference-step"><span>3</span><b>Assessment published</b></div>
+      </div>
+      <header class="published-reference-hero">
+        <div>
+          <span class="published-page-kicker">Published assessment</span>
+          <h1>Your assessment is ready to <span>invite your first candidate</span></h1>
+          <p>Your assessment is published and ready. View the details or invite your first candidate to take the assessment.</p>
+        </div>
+        <button class="focused-skip published-page-change" type="button" onclick="focusedBackToCreate()">&larr; Change role</button>
+      </header>
+        <article class="published-reference-card">
+        <div class="published-reference-card-copy">
+          <div class="published-reference-check">&check;</div>
+          <div>
+            <span class="published-page-kicker">Published assessment</span>
+            <h2>${escapeHtml(d.name||"Assessment")}</h2>
+            <p>${escapeHtml(aboutCopy)}</p>
+            <div class="published-reference-meta"><span>${questionCount} questions</span><span>${escapeHtml(duration)} minutes</span><span>${escapeHtml(d.role||"Configured role")}</span></div>
+          </div>
+        </div>
+        <div class="published-reference-actions">
+          <button class="published-page-secondary" type="button" onclick="focusedTogglePanel('details')"><span>&#9673;</span> View Assessment details</button>
+          <button class="published-page-primary" type="button" onclick="${inviteAction}"><span>&#10148;</span> Invite a candidate</button>
+        </div>
+      </article>
+      ${detailsPanelHtml}
+    </main>
+  </div>`;
+}
 function renderAssessWizard(){
   const d = wizard.data;
   d.experience = d.experience || "Senior";
@@ -6950,7 +7152,7 @@ function renderAssessWizard(){
     return creatingScreenHtml("Creating Your Assessment", steps, ["Reading the job description...","Selecting questions...","Selecting questions...","Preparing your assessment","Finishing up..."]);
   }
   if(d.focusedCreate && d.aiPhase==="focused") return focusedCreateHtml();
-  if(d.focusedCreate && d.aiPhase==="preview") return focusedPreviewHtml();
+  if(d.focusedCreate && d.aiPhase==="preview") return focusedPublishedReferenceHtml();
   if(!d.build || d.aiPhase==="choose"){
     return meWizardChrome("Create Assessment", `<div class="mec">
       <h2>Choose how you'd like to build your assessment</h2>
@@ -8076,14 +8278,14 @@ Object.assign(window, {
   clearJd, closeBillJourney, closeGstMail, closeInfo, closeIntentPicker, closeInviteMail,
   closeListPops, closeRazorpay, closeReady, closeReferShare, closeSignup, closeSitIn,
   closeSso, closeTourIntro, closeTrialJourney, closeWow, confirmIntent, confirmSsoPerms,
-  continueReadyInvites, copyInviteCode, cxAgree, cxFinishExam, cxGo, cxNextQ, cxPick,
+  continueReadyInvites, copyInviteCode, cxAgree, cxFinishExam, cxGo, cxNextQ, cxPick, inviteAgree,
   demoGo, endDemoReel, finishBillJourneyToApp, finishTour, finishTourAndTry,
   generateAiAssessment, generateAiInterview, goExistingLogin, goTrialDay, ivAnswer,
   ivFaceOk, ivFinish, ivGo, ivMicOk, ivNextTurn, ivReportTab, ivRunMic, ivSet,
   ivSpeakCurrent, ivToggle, ivUseName, ivVoiceAnswer, jumpDemoById, jumpDemoScene,
   launchBillRazorpay, leavePlansAfterPay, lockedFeature, mePickQ, meSetExp, meSetWindow,
   meToggle, milestoneGo, nextBillScreen, nextTrialPath, openAssessment, openCandidateFromDash,
-  backToCreateAssessment, openAccountReport, openCreditsNav, openInfo, openInterview, openInvitedReport, openPaidSplit, openReferShare,
+  backToAssessments, backToCreateAssessment, openAccountReport, openCreditsNav, openInfo, openInterview, openInvitedReport, openPaidSplit, openReferShare,
   openUpgradePlans, pasteSampleJd, pauseDemoReel, pauseTour, pickAssessBuild, pickListStatus,
   pickSsoAccount, pinPress, prevBillScreen, prevTrialPath, printGstInvoice, publishAssessment,
   publishInterview, replayProductTour, requestDemoCode, resetListDates, resumePendingCreate,
