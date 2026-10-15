@@ -262,6 +262,7 @@ function openInviteYourselfGate(){
 }
 function openInviteSignup(){
   signupReason = "invite";
+  document.querySelector("#signupModal .modal")?.classList.add("signup-invite-modal");
   document.getElementById("signupModal").classList.add("open");
   document.body.style.overflow = "hidden";
   showSignupStep(1);
@@ -1246,12 +1247,36 @@ function enterSalesPreview(){
   if(new URLSearchParams(location.search).get("story")==="trial") return;
   startCreateAssessment({focused:true});
 }
-function closeSignup(){ signupVerifyGen += 1; document.getElementById("signupModal").classList.remove("open"); document.body.style.overflow=""; }
+function closeSignup(){ signupVerifyGen += 1; document.querySelector("#signupModal .modal")?.classList.remove("signup-invite-modal"); document.getElementById("signupModal").classList.remove("open"); document.body.style.overflow=""; }
 function setProgress(n){ for(let i=1;i<=3;i++) document.getElementById("p"+i).classList.toggle("on", i<=n); }
 
 function showSignupStep(n){
   setProgress(typeof n==="number" ? n : 1);
   const box = document.getElementById("signupContent");
+  if(n===1 && signupReason === "invite"){
+    box.innerHTML = `<div class="signup-invite-progress" aria-label="Signup progress">
+        <div class="signup-progress-step"><i>✓</i><b>1. Your profile</b><span>Tell us about you</span></div>
+        <div class="signup-progress-connector"></div>
+        <div class="signup-progress-step"><i>✓</i><b>2. Your account</b><span>Set up your workspace</span></div>
+        <div class="signup-progress-connector"></div>
+        <div class="signup-progress-step active"><i>3</i><b>3. Invite ready</b><span>See what's included</span></div>
+      </div>
+      <div class="signup-invite-hero">
+        <div class="signup-invite-gift" aria-hidden="true">🎁</div>
+        <div><h2 id="signupTitle">You’re almost ready to invite</h2>
+          <p class="modalcopy">Create your account to unlock 5 free invites and save candidate reports to your workspace.</p></div>
+      </div>
+      <div class="signup-invite-benefits">
+        <div class="signup-invite-benefit"><i>✓</i><div><b>5 free invites included</b><small>Invite up to 5 candidates at no cost.</small></div></div>
+        <div class="signup-invite-benefit"><i>✓</i><div><b>Save candidate reports to your workspace</b><small>Keep candidate results, notes, and reports in one place.</small></div></div>
+      </div>
+      <label class="field"><span>Full name</span><input id="fullName" autocomplete="name" placeholder="e.g. Alex Morgan"></label>
+      <label class="field"><span>Work email</span><input id="workEmail" type="email" autocomplete="email" placeholder="you@company.com" oninput="fillSignupFromEmail()" onblur="fillSignupFromEmail()"></label>
+      <label class="field"><span>Company</span><input id="companyName" autocomplete="organization" placeholder="Your company"></label>
+      <button class="su-cta" onclick="requestDemoCode()">Sign up</button>
+      <div class="demo-note">No credit card. Sign up to unlock 5 free invites and save every candidate report to your account.</div>`;
+    return;
+  }
   if(n===1){
     const invite = signupReason === "invite";
     box.innerHTML = `<h2 id="signupTitle">${invite ? "Sign up to invite" : "Create your account"}</h2>
@@ -5270,6 +5295,10 @@ def query_singers(singers: list[dict], query: str, current_year: int = 2021) -> 
     return;
   }
   if(step==="report"){
+    renderSignalCandidateReport(el, { cand, item, name, email });
+    return;
+  }
+  if(false){
     const r = cand.report || {};
     const score = typeof r.score === "number" ? r.score : 78;
     const skills = (r.skills||[]).slice(0,3).map(s=>`<article class="cx-report-skill"><div><b>${escapeHtml(s.name||"Skill")}</b><span>${escapeHtml(String(s.pct||0))}%</span></div><i><em style="width:${Math.max(0,Math.min(100,Number(s.pct)||0))}%"></em></i></article>`).join("");
@@ -5302,6 +5331,124 @@ def query_singers(singers: list[dict], query: str, current_year: int = 2021) -> 
     <p>${lite?"Open the report for your score and shortlist. Webcam, coding, and full proctoring unlock on a paid plan.":"Otomeyt AI will review your responses. Open the report for score, skills, and proctoring."}</p>
     <button class="te-btn" type="button" onclick="openInvitedReport()">View report</button>
   </div></div>`;
+}
+function renderSignalCandidateReport(el, context){
+  const { cand, item, name, email } = context;
+  const report = cand.report || {};
+  const score = typeof report.score === "number" ? report.score : 78;
+  const sourceSkills = Array.isArray(report.skills) ? report.skills.slice(0,3) : [];
+  const fallbackSkills = [
+    { name:"Role depth", pct:82 },
+    { name:"Collaboration", pct:74 },
+    { name:"Systems thinking", pct:41 }
+  ];
+  const skills = fallbackSkills.map((fallback,index)=>{
+    const source = sourceSkills[index] || {};
+    const pct = Number(source.pct);
+    return {
+      name: source.name || fallback.name,
+      pct: Number.isFinite(pct) && pct > 0 ? Math.min(100,pct) : fallback.pct
+    };
+  });
+  const savedAnswers = cand.answers || {};
+  const responses = [0,1,2].map((index)=>{
+    const question = CX_QS[index] || {};
+    const options = Array.isArray(question.opts) ? question.opts : [];
+    const savedKey = savedAnswers[`q${index+1}`] || options[0]?.k || "";
+    const selectedOption = options.find((option)=>option.k===savedKey) || options[0] || {};
+    const answerText = selectedOption.t || "Answer submitted";
+    const mappedSkill = skills[index]?.name || fallbackSkills[index].name;
+    return `<article class="signal-report-response signal-response-${index+1}">
+      <span class="signal-report-response-icon">0${index+1}</span>
+      <div class="signal-report-response-copy">
+        <span class="signal-report-response-top"><b>Response ${index+1}</b><em>Selected ${escapeHtml(savedKey || "-")}</em></span>
+        <p>${escapeHtml(answerText)}</p>
+        <small>${escapeHtml(mappedSkill)} signal</small>
+      </div>
+    </article>`;
+  }).join("");
+  const signalRows = skills.map((skill,index)=>`<article class="signal-report-row signal-row-${index+1}">
+    <span class="signal-report-row-icon">${index===0?"◇":index===1?"♧":"⌘"}</span>
+    <div><b>${escapeHtml(skill.name)}</b><i><em style="width:${skill.pct}%"></em></i></div>
+    <strong>${skill.pct}%</strong>
+  </article>`).join("");
+  const nodePositions = [
+    [13,49],[20,30],[24,67],[31,18],[34,44],[36,76],[44,28],[46,56],[50,10],
+    [54,43],[57,72],[63,22],[65,53],[69,83],[75,34],[79,63],[86,20],[88,51]
+  ];
+  const nodes = nodePositions.map((position,index)=>`<i class="signal-network-node signal-node-${index%4+1}" style="left:${position[0]}%;top:${position[1]}%"></i>`).join("");
+  const candidateInitials = initials(name || "Candidate");
+  const responseCount = Number(report.questions) || 3;
+  el.innerHTML = `<div class="signal-report-page">
+    <header class="signal-report-header">
+      <div class="signal-report-brand"><span class="signal-report-logo">M</span><b>MeritEdge</b><small>by Otomeyt AI</small></div>
+      <div class="signal-report-nav">AI Assessments <span>›</span> Candidate report</div>
+    </header>
+    <div class="signal-report-candidate">
+      <span class="signal-report-avatar">${escapeHtml(candidateInitials)}</span>
+      <b>${escapeHtml(item.title || "Assessment")}</b><span>›</span><small>${responseCount} responses</small>
+      <button type="button" onclick="backToAssessments()">Back to assessments</button>
+    </div>
+    <main class="signal-report-main">
+      <section class="signal-report-intro">
+        <h1>From responses to report signals</h1>
+        <p>Your candidate's answers are analyzed by Otomeyt AI to generate a structured assessment of strengths and opportunities across key skills.</p>
+      </section>
+      <section class="signal-report-flow">
+        <div class="signal-report-responses">
+          <h2>Candidate answers</h2>
+          ${responses}
+        </div>
+        <div class="signal-report-mapping">
+          <h2>Skill mapping</h2>
+          <p>Otomeyt AI analyzes your candidate's responses, extracting skills, behaviors and experience signals.</p>
+          <div class="signal-network" aria-hidden="true">
+            <svg class="signal-network-web" viewBox="0 0 600 340" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="signalStreamPurple" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".52" stop-color="#7867ff"/><stop offset="1" stop-color="#9b62ff"/></linearGradient>
+                <linearGradient id="signalStreamBlue" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f7df4"/><stop offset=".5" stop-color="#3b82f6"/><stop offset="1" stop-color="#48a8ff"/></linearGradient>
+                <linearGradient id="signalStreamTeal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16c9c3"/><stop offset=".5" stop-color="#21d4cb"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient>
+                <filter id="signalWebGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <g class="signal-network-mesh">
+                <path d="M75 102 L151 54 L224 104 L298 72 L375 119 L465 70 L540 116"/>
+                <path d="M53 178 L126 128 L209 168 L298 122 L381 169 L467 132 L552 180"/>
+                <path d="M70 246 L150 202 L222 251 L302 205 L386 253 L463 210 L535 254"/>
+                <path d="M126 128 L151 54 M126 128 L150 202 M209 168 L224 104 M209 168 L222 251 M298 122 L298 72 M298 122 L302 205 M381 169 L375 119 M381 169 L386 253 M467 132 L465 70 M467 132 L463 210"/>
+                <path d="M151 54 L209 168 L298 72 L381 169 L465 70"/>
+                <path d="M150 202 L209 168 L302 205 L381 169 L463 210"/>
+              </g>
+              <path class="signal-network-stream signal-stream-purple" d="M0 78 C92 78 117 145 212 164 C305 183 390 87 600 82"/>
+              <path class="signal-network-stream signal-stream-blue" d="M0 171 C102 168 150 202 260 176 C377 148 443 207 600 170"/>
+              <path class="signal-network-stream signal-stream-teal" d="M0 266 C98 264 144 207 249 214 C374 223 454 261 600 255"/>
+            </svg>
+            <span class="signal-network-core"></span>${nodes}
+          </div>
+        </div>
+        <div class="signal-report-signals">
+          <h2>Assessment signals</h2>
+          <p>Key skills and an overall profile score, generated from candidate responses.</p>
+          <article class="signal-report-overall">
+            <span>Overall assessment</span>
+            <div class="signal-report-overall-candidate">
+              <span>${escapeHtml(candidateInitials)}</span>
+              <div>
+                <b>${escapeHtml(name || "Candidate")}</b>
+                <small>${escapeHtml(email || "Candidate email unavailable")}</small>
+                <em>${escapeHtml(report.time || "8m")} completed <i>\u00b7</i> ${responseCount} responses</em>
+              </div>
+            </div>
+            <div class="signal-report-score" style="--signal-score:${Math.max(0,Math.min(100,score))*3.6}deg"><b>${score}%</b></div>
+          </article>
+          ${signalRows}
+        </div>
+      </section>
+    </main>
+    <footer class="signal-report-footer">
+      <button type="button" onclick="openCandidateUpgrade()"><span>▢</span> Unlock full report</button>
+      <p>Get the complete AI assessment with detailed insights, evidence and recommendations.</p>
+    </footer>
+  </div>`;
 }
 const IV_TURNS = __D.interviewTurns;
 function ivAlex(item){ return (item && item.interviewer) || "Alex"; }
@@ -6995,10 +7142,11 @@ function focusedCreateHtml(){
   const availableRoles = activeGroup?.roles || [];
   const custom = d.focusedCustomText || "";
   const roleName = selected?.role || activeGroup?.roles.find(j=>j.id===activeRoleId)?.role || "Choose a role";
+  const demoButton = `<button class="focused-demo focused-demo-compact" type="button" onclick="startDemoReel()" aria-label="Click here to watch demo"><span class="focused-demo-play">&#9654;</span><b>Click here to watch demo</b></button>`;
   return `<div class="mew focused-create focused-create-v2">
     <div class="focused-brandbar has-logo">
       <img src="assets/otomeyt-ai-logo.svg" alt="Otomeyt AI">
-      <div class="focused-brand-actions">${previewLogin}<div class="focused-step-badge"><b>1</b><span>Create Your Assessment</span></div></div>
+      <div class="focused-brand-actions">${demoButton}${previewLogin}<div class="focused-step-badge"><b>1</b><span>Create Your Assessment</span></div></div>
     </div>
     <div class="focused-head">
       <div>
